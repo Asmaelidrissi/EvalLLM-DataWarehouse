@@ -18,4 +18,4 @@ Ce projet vise à structurer, stocker et analyser les performances de modèles d
 - `docs/` → capture du dashboard Power BI
 - `SQL/` → script de création des tables du schéma en étoile
 - `ETL/` → captures ou explication des flux SSIS
-- `report/` → rapport académique complet
+- `PowerBI/` → Les dashboards complets
