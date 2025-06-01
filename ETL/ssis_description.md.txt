@@ -1,0 +1,42 @@
+#  SSIS – Flux ETL pour EvalLLM
+
+Le flux SSIS mis en place permet de transformer et charger les métadonnées des modèles LLM issues d’un fichier CSV (`huggingface_v2.csv`) vers un entrepôt de données relationnel structuré en étoile.
+
+---
+
+##  Étapes principales du pipeline SSIS
+
+### 1.  **Importation (Flat File Source)**
+- Le fichier CSV est chargé via un composant `Flat File Source`.
+- Des conversions sont appliquées (colonnes booléennes, dates, float).
+
+### 2.  **Nettoyage & Transformation**
+- `Derived Column` : extraction de colonnes supplémentaires (`model_name`, `provider`, `likes_cleaned`, etc.)
+- `Unpivot` : conversion des scores bruts et normalisés vers une forme long format.
+- `Conditional Split` : distinction des benchmarks valides/inconnus.
+
+### 3.  **Dimension Lookups**
+- `Lookup` vers :
+  - `DimModel` (via `raw_model_id`)
+  - `DimBenchmark` (via `benchmark_id`)
+  - `DimDate` (via `date_eval`)
+- SCD Type 2 est utilisé pour `DimModel` afin de gérer l’historique des modifications.
+
+### 4.  **Chargement**
+- Les données finales sont insérées dans :
+  - `FactEvaluation` : pour les scores et métadonnées des benchmarks
+  - `FactModelSnapshot` : pour l’évolution mensuelle des modèles
+
+---
+
+##  Particularités
+
+- Gestion des valeurs NULL et types incompatibles
+- Ajout de flags logiques pour filtrage (ex. : `is_main_score`)
+- Contrôle des doublons et erreurs de clé étrangère via `Conditional Split` et gestion d’erreurs
+
+---
+
+##  Illustration
+
+Tu peux consulter le diagramme complet du flux dans [`docs/ssis_flux_diagram.png`](../docs/ssis_flux_diagram.png)
